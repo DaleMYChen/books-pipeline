@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: mart_price_bands
+    description: >
+      One row per price band. Shows distribution of books across price ranges,
+      average rating per band, and the top-rated book in each band.
+    columns:
+      - name: price_band
+        tests:
+          - not_null
+          - unique
+      - name: total_books
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+      - name: avg_price_gbp
+        tests:
+          - not_null

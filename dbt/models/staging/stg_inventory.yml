@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: stg_inventory
+    description: "Cleaned inventory data scraped from book detail pages."
+    columns:
+      - name: book_url
+        description: "Join key back to stg_books — uniquely identifies a book"
+        tests:
+          - not_null
+          - unique
+
+      - name: upc
+        description: "Universal Product Code — natural unique key"
+        tests:
+          - not_null
+          - unique
+
+      - name: num_in_stock
+        description: "Copies available — must be non-negative"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: num_reviews
+        description: "Customer review count — must be non-negative"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"

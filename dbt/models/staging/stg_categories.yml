@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: stg_categories
+    description: "Cleaned category dimension"
+    columns:
+      - name: category_id
+        description: "PK - integer extracted from url"
+        tests:
+          - not_null
+          - unique
+      
+      - name: category_name
+        description: "Category label"
+        tests:
+          - not_null
+          - unique
+

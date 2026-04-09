@@ -1,0 +1,21 @@
+# Environment
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Airflow
+airflow/logs/
+airflow/plugins/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# macOS
+.DS_Store
+
+# Snowflake
+BooksWH.sql

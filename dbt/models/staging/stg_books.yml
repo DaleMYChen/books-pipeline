@@ -1,0 +1,43 @@
+version: 2
+ 
+models:
+  - name: stg_books
+    description: "Cleaned and typed book data. One row per unique book title."
+    columns:
+      - name: book_title
+        description: "Full book title — natural primary key for this layer"
+        tests:
+          - not_null
+          - unique
+
+      - name: price_gbp
+        description: "Price in GBP as DECIMAL(10,2)"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+
+      - name: rating_word
+        description: "Star rating as English word"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['One', 'Two', 'Three', 'Four', 'Five']
+
+      - name: rating_stars
+        description: 'Star rating as integer 1-5'
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1,2,3,4,5]
+
+      - name: category_id
+        description: "FK to stg_categories"
+        tests:
+          - not_null
+
+      - name: book_url
+        description: "Relative URL — join key to stg_inventory"
+        tests:
+          - not_null
+          - unique

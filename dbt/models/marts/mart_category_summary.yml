@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: mart_category_summary
+    description: >
+      One row per category. Aggregates price, rating, and inventory
+      metrics. Primary analytical surface for category-level reporting.
+    columns:
+      - name: category_id
+        tests:
+          - not_null
+          - unique
+      - name: category_name
+        tests:
+          - not_null
+      - name: total_books
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"

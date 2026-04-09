@@ -1,0 +1,8 @@
+apache-airflow-providers-amazon
+apache-airflow-providers-snowflake
+snowflake-connector-python
+dbt-snowflake
+boto3
+pandas
+beautifulsoup4
+requests

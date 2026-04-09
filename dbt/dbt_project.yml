@@ -1,0 +1,25 @@
+# Configure dbt project
+name: 'books_pipeline'
+version: '1.0.0'
+profile: 'books_pipeline'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:    # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+# Configure dbt models
+models:
+  books_pipeline:
+    staging:
+      +materialized: view
+      +schema: STAGING      # → BOOKS_WAREHOUSE.STAGING (via generate_schema_name macro)
+    marts:
+      +materialized: table
+      +schema: MARTS        # → BOOKS_WAREHOUSE.MARTS

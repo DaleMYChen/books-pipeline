@@ -1,0 +1,47 @@
+version: 2
+
+sources:
+  - name: raw
+    database: BOOKS_WAREHOUSE
+    schema: RAW
+    description: "Raw tables loaded by Airflow COPY INTO from S3"
+    tables:
+      - name: raw_books
+        description: "One row per book scraped from each category listing page"
+        columns:
+          - name: product_name
+            description: "Full book title"
+          - name: price
+            description: "Raw price string including £ symbol (e.g. '£12.99')"
+          - name: rating_word
+            description: "Star rating as English word: One | Two | Three | Four | Five"
+          - name: category_id
+            description: "Integer FK to raw_categories.category_id"
+          - name: book_url
+            description: "Relative URL used as join key with raw_inventory"
+          - name: extracted_at
+            description: "UTC timestamp when the record was scraped"
+
+      - name: raw_categories
+        description: "One row per category scraped from the site sidebar"
+        columns:
+          - name: category_id
+            description: "Integer extracted from the category URL slug"
+          - name: category_name
+            description: "Human-readable category name (e.g. 'Travel')"
+          - name: extracted_at
+            description: "UTC timestamp when the record was scraped"
+
+      - name: raw_inventory
+        description: "One row per book scraped from the book detail page"
+        columns:
+          - name: book_url
+            description: "Relative URL — join key back to raw_books"
+          - name: upc
+            description: "Universal Product Code — natural unique key for a book"
+          - name: num_in_stock
+            description: "Number of copies in stock as integer"
+          - name: num_reviews
+            description: "Number of customer reviews"
+          - name: extracted_at
+            description: "UTC timestamp when the record was scraped"
