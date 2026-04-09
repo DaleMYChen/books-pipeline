@@ -41,6 +41,45 @@ Scrape tasks run in parallel. Each feeds its own load task independently.
 All three loads must succeed before dbt begins.
 
 ---
+## What dbt produces and potential analysis
+ 
+The three raw CSVs land in Snowflake exactly as scraped — messy strings, no
+types enforced, duplicates possible. dbt transforms them across two layers into
+clean, query-ready analytical tables.
+ 
+**Staging layer (views)** cleans each raw table independently. Price strings
+like `£12.99` are stripped and cast to `DECIMAL`. Star ratings stored as English
+words (`Three`) are mapped to integers (`3`). Duplicate rows from multiple scrape
+runs are collapsed to the most recent record per book using `ROW_NUMBER()`. The
+result is three typed, deduplicated views — one per source — that are safe to join.
+ 
+**Marts layer (tables)** joins and aggregates the staging views into three
+purpose-built analytical surfaces:
+ 
+`dim_books` is the central dimension table — one row per book with all attributes
+joined: title, price, rating, category name, stock count, and a derived
+`stock_status` label (Available / Low Stock / Out of Stock). It is the foundation
+for any ad-hoc book-level query and is where foreign key integrity is validated
+(every `category_id` must resolve to a real category).
+ 
+`mart_category_summary` aggregates to one row per category, exposing average
+price, average rating, total stock, and counts of low-stock and out-of-stock
+books per category. This table directly answers questions like: which genres
+command the highest prices, which are highest rated, and where is inventory
+running low.
+ 
+`mart_price_bands` buckets all books into five price ranges and ranks books
+within each band by rating. It surfaces the top-rated book per band, enabling
+value-for-money comparisons across the catalogue.
+ 
+**Analysis the tables would enable:**
+- Correlation between price and rating — do expensive books actually rate higher?
+- Category-level inventory health — which genres are running low on stock?
+- Best-value identification — highest-rated books in the cheapest price band
+- Cross-category pricing benchmarks — which genres are over or under-priced relative to their average rating?
+ 
+
+---
 
 ## Design decisions
 
@@ -212,4 +251,8 @@ SELECT * FROM BOOKS_WAREHOUSE.MARTS.MART_PRICE_BANDS;
 
 ---
 
+
+## Misc.
+### 1. CI/CD of Data Pipelines
+The CI/CD workflows only operate on the dbt transformation layer — compiling SQL, building models into Snowflake, running schema tests. None of that touches S3. The scraping and S3 loading is handled entirely by Airflow running locally on its daily schedule, which GitHub Actions has no reason to trigger or verify.
 

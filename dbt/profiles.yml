@@ -1,5 +1,7 @@
 books_pipeline:
   outputs:
+
+    # ── Local development (Docker Airflow) ─────────────────────────────────
     dev:
       type: snowflake
       account:   "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
@@ -8,7 +10,35 @@ books_pipeline:
       role:      "{{ env_var('SNOWFLAKE_ROLE') }}"
       database:  "{{ env_var('SNOWFLAKE_DATABASE') }}"
       warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
-      schema: STAGING   # default schema; overridden per layer in dbt_project.yml
+      schema: STAGING   # default; overridden per layer by dbt_project.yml + macro
       threads: 4
-  target: dev
 
+    # ── CI (GitHub Actions — Pull Request) ─────────────────────────────────
+    # Writes to STAGING_CI and MARTS_CI via the generate_schema_name macro.
+    # Fully isolated from production data — safe to run on every PR.
+    ci:
+      type: snowflake
+      account:   "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:      "{{ env_var('SNOWFLAKE_USER') }}"
+      password:  "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      "{{ env_var('SNOWFLAKE_ROLE') }}"
+      database:  "{{ env_var('SNOWFLAKE_DATABASE') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+      schema: STAGING_CI
+      threads: 4
+
+    # ── Production (GitHub Actions — merge to main) ─────────────────────────
+    # Writes to STAGING and MARTS — the live production schemas.
+    # Only triggered after PR is approved and merged.
+    prod:
+      type: snowflake
+      account:   "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user:      "{{ env_var('SNOWFLAKE_USER') }}"
+      password:  "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role:      "{{ env_var('SNOWFLAKE_ROLE') }}"
+      database:  "{{ env_var('SNOWFLAKE_DATABASE') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE') }}"
+      schema: STAGING
+      threads: 4
+
+  target: dev
